@@ -16,6 +16,7 @@ class MoodleConfig:
     token: str
     user: str
     password: str
+    verify_ssl: bool
 
 
 @dataclass(frozen=True)
@@ -43,6 +44,21 @@ def _require(key: str) -> str:
     return value
 
 
+def _get_bool(key: str, default: bool) -> bool:
+    """Read a boolean environment variable, rejecting ambiguous values."""
+    value = os.getenv(key)
+    if value is None:
+        return default
+    normalized = value.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    raise EnvironmentError(
+        f"Environment variable '{key}' must be true or false, got {value!r}."
+    )
+
+
 def load_config() -> AppConfig:
     """Load and validate all configuration from environment. Raises on missing required values."""
     return AppConfig(
@@ -51,6 +67,7 @@ def load_config() -> AppConfig:
             token=_require("MOODLE_TOKEN"),
             user=_require("MOODLE_USER"),
             password=_require("MOODLE_PASS"),
+            verify_ssl=_get_bool("MOODLE_VERIFY_SSL", True),
         ),
         bot=BotConfig(
             max_file_size_mb=float(os.getenv("MAX_FILE_SIZE_MB", "999")),

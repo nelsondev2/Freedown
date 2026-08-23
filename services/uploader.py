@@ -40,13 +40,20 @@ class MoodleUploader:
     """
 
     def __init__(self) -> None:
-        self._host  = config.moodle.host
-        self._token = config.moodle.token
+        self._host       = config.moodle.host
+        self._token      = config.moodle.token
+        self._verify_ssl = config.moodle.verify_ssl
+        if not self._verify_ssl:
+            logger.warning(
+                "La verificación TLS de Moodle está desactivada. "
+                "Úsalo solo temporalmente hasta renovar su certificado."
+            )
         self._converter = MoodleConverter(
             host=self._host,
             user=config.moodle.user,
             password=config.moodle.password,
             token=self._token,
+            verify_ssl=self._verify_ssl,
         )
 
     # ── public API ────────────────────────────────────────────────────────────
@@ -95,7 +102,14 @@ class MoodleUploader:
                     upload_url,
                     files={"file": (filename, fh, "application/octet-stream")},
                     timeout=300,
+                    verify=self._verify_ssl,
                 )
+        except requests.exceptions.SSLError as exc:
+            raise UploadError(
+                "El certificado HTTPS de Moodle no es válido o expiró. "
+                "Renueva el certificado o configura temporalmente "
+                "MOODLE_VERIFY_SSL=false."
+            ) from exc
         except requests.RequestException as exc:
             raise UploadError(f"Error de red durante la subida: {exc}") from exc
 

@@ -47,11 +47,19 @@ class MoodleConverter:
     can delete the event (and its file) later.
     """
 
-    def __init__(self, host: str, user: str, password: str, token: str) -> None:
-        self._host     = host.rstrip("/")
-        self._user     = user
-        self._password = password
-        self._token    = token
+    def __init__(
+        self,
+        host: str,
+        user: str,
+        password: str,
+        token: str,
+        verify_ssl: bool = True,
+    ) -> None:
+        self._host       = host.rstrip("/")
+        self._user       = user
+        self._password   = password
+        self._token      = token
+        self._verify_ssl = verify_ssl
 
     # ── public API ────────────────────────────────────────────────────────────
 
@@ -63,7 +71,8 @@ class MoodleConverter:
         Returns ConvertResult(url, event_id).
         Raises UrlConversionError on failure.
         """
-        async with aiohttp.ClientSession() as session:
+        connector = aiohttp.TCPConnector(ssl=self._verify_ssl)
+        async with aiohttp.ClientSession(connector=connector) as session:
             sesskey, userid = await self._authenticate(session)
             return await self._submit_and_extract(
                 session, sesskey, userid, draft_url, draft_itemid, filename,
@@ -74,7 +83,8 @@ class MoodleConverter:
         Delete a calendar event (and its attached file) by event_id.
         Raises UrlConversionError on failure.
         """
-        async with aiohttp.ClientSession() as session:
+        connector = aiohttp.TCPConnector(ssl=self._verify_ssl)
+        async with aiohttp.ClientSession(connector=connector) as session:
             sesskey, _ = await self._authenticate(session)
             await self._do_delete(session, sesskey, event_id)
 

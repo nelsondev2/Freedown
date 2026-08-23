@@ -54,7 +54,8 @@ cp .env.example .env
 | `MOODLE_TOKEN` | Webservice token with upload permissions |
 | `MOODLE_USER` | Username of a Moodle account (for calendar URL conversion) |
 | `MOODLE_PASS` | Password for `MOODLE_USER` |
-| `MAX_FILE_SIZE_MB` | Maximum file size accepted (default: 3000) |
+| `MOODLE_VERIFY_SSL` | Verify Moodle's HTTPS certificate (default: `true`). Use `false` only temporarily for an expired certificate |
+| `MAX_FILE_SIZE_MB` | Maximum file size accepted (default: 999) |
 | `PART_SIZE_MB` | Volume size for multi-part splits (default: 99) |
 | `UPLOAD_DELAY_SECONDS` | Delay between part uploads (default: 2) |
 | `LOG_LEVEL` | `DEBUG`, `INFO`, `WARNING`, `ERROR` (default: `INFO`) |
